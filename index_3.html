@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가계부</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --card-bg: #ffffff;
+    --border: #e5e3de;
+    --text: #2b2b28;
+    --text-muted: #79766e;
+    --accent: #4a6a5a;
+    --income: #2f7d5c;
+    --expense: #b3543e;
+    --over: #b3543e;
+    --under: #2f7d5c;
+    --header-bg: #f0efe9;
+    --cat-bg: #eceae3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --card-bg: #262624;
+      --border: #3a3a36;
+      --text: #ece9e2;
+      --text-muted: #a39e93;
+      --accent: #7fa593;
+      --income: #6fbf95;
+      --expense: #e08a72;
+      --over: #e08a72;
+      --under: #6fbf95;
+      --header-bg: #2d2d2a;
+      --cat-bg: #33322e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 60px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Noto Sans KR", sans-serif;
+    line-height: 1.5;
+  }
+  .container { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0 0 4px; }
+  .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .card-title { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+  .card-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 14px; }
+
+  .principle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+  .principle-item { display: flex; flex-direction: column; gap: 3px; }
+  .principle-tag {
+    align-self: flex-start;
+    background: var(--cat-bg);
+    color: var(--text);
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .principle-desc { color: var(--text-muted); font-size: 11.5px; line-height: 1.3; }
+  .principle-limit {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .budget-row {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    background: var(--header-bg);
+    border-radius: 10px;
+    font-size: 13.5px;
+  }
+  .budget-row .item { display: flex; flex-direction: column; gap: 2px; }
+  .budget-row .label { color: var(--text-muted); font-size: 12px; }
+  .budget-row .value { font-weight: 700; font-size: 15px; }
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .badge.over { background: rgba(179,84,62,0.15); color: var(--over); }
+  .badge.under { background: rgba(47,125,92,0.15); color: var(--under); }
+  .corp-text { color: #5a62a8; font-weight: 700; white-space: nowrap; }
+  @media (prefers-color-scheme: dark) {
+    .corp-text { color: #9299de; }
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 6px; }
+  thead th {
+    text-align: left;
+    background: var(--header-bg);
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  tbody tr:last-child td { border-bottom: none; }
+  tr.cat-row td {
+    background: var(--cat-bg);
+    font-weight: 700;
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+  tr.subtotal-row td {
+    font-weight: 700;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  td.amt { text-align: right; white-space: nowrap; }
+  tfoot td {
+    padding: 10px 10px;
+    font-weight: 700;
+    border-top: 2px solid var(--border);
+  }
+  tfoot td.amt { text-align: right; }
+  td.empty { color: var(--text-muted); text-align: center; padding: 22px 10px; }
+
+  .highlight-box {
+    font-size: 13.5px;
+    background: var(--header-bg);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 14px;
+  }
+  .highlight-box .h-title { font-weight: 700; margin-bottom: 8px; }
+  .highlight-box ol, .highlight-box ul { margin: 0; padding-left: 18px; }
+  .highlight-box li { margin-bottom: 5px; }
+  .highlight-box li:last-child { margin-bottom: 0; }
+  .note { font-size: 13px; color: var(--text-muted); }
+  .section-label { font-size: 13px; font-weight: 700; margin: 16px 0 8px; color: var(--text-muted); }
+
+  .carousel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .nav-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 18px;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .month-label { font-weight: 700; font-size: 15px; min-width: 110px; text-align: center; }
+  .carousel { position: relative; touch-action: pan-y; }
+  .dots { display: flex; justify-content: center; gap: 6px; margin: 4px 0 20px; }
+  .dot { width: 6px; height: 6px; border-radius: 3px; background: var(--border); }
+  .dot.active { background: var(--accent); width: 16px; transition: width .2s; }
+
+  .cat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 14px;
+    row-gap: 14px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .cat-grid::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: var(--border);
+  }
+  .cat-cell { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .cat-name-btn {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    line-height: 1.3;
+    cursor: pointer;
+  }
+  .cat-name-btn .chev { font-size: 14px; color: var(--text-muted); flex: 0 0 auto; }
+  .cat-amt { font-weight: 700; white-space: nowrap; }
+  .amt-val { font-size: 13.5px; }
+  .delta { display: inline-block; font-weight: 400; font-size: 11px; margin-left: 6px; }
+  .delta.save { color: var(--under); }
+  .delta.over { color: var(--over); }
+  .corp-note {
+    display: block;
+    font-weight: 600;
+    font-size: 10.5px;
+    color: #5a62a8;
+    margin-top: 2px;
+  }
+  @media (prefers-color-scheme: dark) {
+    .corp-note { color: #9299de; }
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 10px;
+  }
+  .target-link {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--accent);
+    background: none;
+    border: none;
+    padding: 4px 2px;
+    cursor: pointer;
+  }
+  .target-link .chev { font-size: 15px; line-height: 1; }
+
+  /* --- CSS-only month carousel (no JS) --- */
+  .month-radio { position: absolute; opacity: 0; pointer-events: none; }
+  .carousel-item { display: none; }
+  #tabJul:checked ~ .carousel #panelJul { display: block; }
+  #tabAug:checked ~ .carousel #panelAug { display: block; }
+  .month-label .lbl-jul, .month-label .lbl-aug { display: none; }
+  #tabJul:checked ~ .carousel-nav .lbl-jul { display: inline; }
+  #tabAug:checked ~ .carousel-nav .lbl-aug { display: inline; }
+  #tabJul:checked ~ .dots .dot-jul { background: var(--accent); width: 16px; }
+  #tabAug:checked ~ .dots .dot-aug { background: var(--accent); width: 16px; }
+  .dots label.dot { cursor: pointer; transition: width .2s; }
+  #tabJul:checked ~ .carousel-nav label[for="tabJul"] { opacity: 0.3; pointer-events: none; }
+  #tabAug:checked ~ .carousel-nav label[for="tabAug"] { opacity: 0.3; pointer-events: none; }
+  .carousel-nav label.nav-btn { user-select: none; }
+
+  /* --- details/summary based popovers (no JS) --- */
+  details.target-details { position: relative; flex: 0 0 auto; }
+  details.target-details summary.target-link { list-style: none; cursor: pointer; }
+  details.target-details summary.target-link::-webkit-details-marker { display: none; }
+  details.target-details[open] summary .chev { transform: rotate(90deg); display: inline-block; }
+  .target-details-body {
+    position: absolute; top: 100%; right: 0; margin-top: 8px;
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; width: 280px; max-width: 80vw; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    z-index: 10;
+  }
+  details.cat-details { width: 100%; position: relative; }
+  details.cat-details summary {
+    cursor: pointer; list-style: none;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  details.cat-details summary::-webkit-details-marker { display: none; }
+  .cat-name-line {
+    color: var(--text-muted); font-size: 12.5px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cat-name-line .chev { font-size: 14px; color: var(--text-muted); flex: 0 0 auto; transition: transform .15s; }
+  details.cat-details[open] .cat-name-line .chev { transform: rotate(90deg); }
+  .cat-amt-line { font-weight: 700; font-size: 13.5px; }
+  /* Popover instead of inline expansion — inline would get squeezed into
+     one half of the 2-col grid and wrap every cell to 4+ lines. */
+  .cat-details-body {
+    position: absolute;
+    top: 100%;
+    margin-top: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    width: 280px;
+    max-width: calc(100vw - 48px);
+    max-height: 60vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    z-index: 20;
+  }
+  .cat-cell:nth-child(odd) .cat-details-body { left: 0; }
+  .cat-cell:nth-child(even) .cat-details-body { right: 0; }
+  .cat-details-body table { margin-bottom: 0; font-size: 12.5px; }
+  .cat-details-body td { padding: 6px 6px; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤑선호네 가계부🤑</h1>
+    <div class="subtitle">2026년 7월부터 기록. 단위: 만원</div>
+
+    <div class="card">
+      <div class="principle-grid">
+        <div class="principle-item">
+          <span class="principle-tag">① 고정비</span>
+          <span class="principle-desc">보험 · 이자 · 통신 · 관리비 등</span>
+        </div>
+        <div class="principle-item">
+          <span class="principle-tag">② 필수생활비</span>
+          <span class="principle-desc">식료품 · 아이 이유식 · 기저귀 · 강아지 등</span>
+        </div>
+        <div class="principle-item">
+          <span class="principle-tag">③ 월 생활비 외 큰 지출</span>
+        </div>
+        <div class="principle-item">
+          <span class="principle-tag">④ 자유생활비</span>
+          <span class="principle-desc">배달 · 옷 · 장난감 · 비필수 쇼핑 등</span>
+        </div>
+      </div>
+    </div>
+
+    <input type="radio" name="month" id="tabJul" class="month-radio">
+    <input type="radio" name="month" id="tabAug" class="month-radio" checked>
+
+    <div class="carousel-nav">
+      <label for="tabJul" class="nav-btn" aria-label="이전 달">&#8249;</label>
+      <div class="month-label"><span class="lbl-jul">2026년 7월</span><span class="lbl-aug">2026년 8월</span></div>
+      <label for="tabAug" class="nav-btn" aria-label="다음 달">&#8250;</label>
+    </div>
+    <div class="carousel" id="carousel">
+    <div class="card carousel-item" id="panelJul">
+      <div class="card-title">2026년 7월</div>
+      <div class="card-sub">실제 지출</div>
+
+      <div class="budget-row">
+        <div class="item"><span class="label">목표</span><span class="value">300만원</span></div>
+        <div class="item"><span class="label">실제 지출</span><span class="value">494.5만원</span></div>
+        <div class="item"><span class="label">차이</span><span class="value">+194.5만원 <span class="badge over">목표 초과</span></span></div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>분류</th><th>항목</th><th style="text-align:right;">금액</th></tr>
+        </thead>
+        <tbody>
+          <tr class="cat-row"><td colspan="2">아이</td><td class="amt">&nbsp;</td></tr>
+          <tr><td></td><td>생활·안전용품</td><td class="amt">25.8만원</td></tr>
+          <tr><td></td><td>기저귀·위생</td><td class="amt">17.2만원</td></tr>
+          <tr><td></td><td>장난감·교육</td><td class="amt">17.6만원</td></tr>
+          <tr><td></td><td>식품·영양/이유식</td><td class="amt">17.2만원</td></tr>
+          <tr><td></td><td>이유식·식기용품</td><td class="amt">15.4만원</td></tr>
+          <tr><td></td><td>옷</td><td class="amt">24.0만원</td></tr>
+          <tr><td></td><td>병원</td><td class="amt">16.7만원</td></tr>
+          <tr><td></td><td>보험</td><td class="amt">12.0만원</td></tr>
+          <tr class="subtotal-row"><td></td><td>아이 소계</td><td class="amt">145.9만원</td></tr>
+
+          <tr class="cat-row"><td colspan="2">생활</td><td class="amt">&nbsp;</td></tr>
+          <tr><td></td><td>식료품</td><td class="amt">66.8만원</td></tr>
+          <tr><td></td><td>배달음식</td><td class="amt">87.0만원</td></tr>
+          <tr><td></td><td>관리비·관리</td><td class="amt">25.3만원</td></tr>
+          <tr><td></td><td>가스</td><td class="amt">1.0만원</td></tr>
+          <tr><td></td><td>통신</td><td class="amt">15.0만원</td></tr>
+          <tr><td></td><td>강아지</td><td class="amt">1.7만원</td></tr>
+          <tr><td></td><td>강아지 산책</td><td class="amt">25.0만원</td></tr>
+          <tr><td></td><td>차량·세차</td><td class="amt">3.0만원</td></tr>
+          <tr class="subtotal-row"><td></td><td>생활 소계</td><td class="amt">224.8만원</td></tr>
+
+          <tr class="cat-row"><td colspan="2">개인</td><td class="amt">&nbsp;</td></tr>
+          <tr><td></td><td>병원</td><td class="amt">45.8만원</td></tr>
+          <tr><td></td><td>내 옷</td><td class="amt">20.0만원</td></tr>
+          <tr><td></td><td>보험</td><td class="amt">35.0만원</td></tr>
+          <tr class="subtotal-row"><td></td><td>개인 소계</td><td class="amt">100.8만원</td></tr>
+
+          <tr class="cat-row"><td colspan="2">금융</td><td class="amt">&nbsp;</td></tr>
+          <tr><td></td><td>이자</td><td class="amt">23.0만원</td></tr>
+          <tr class="subtotal-row"><td></td><td>금융 소계</td><td class="amt">23.0만원</td></tr>
+        </tbody>
+        <tfoot>
+          <tr><td colspan="2">이번 달 총지출</td><td class="amt">494.5만원</td></tr>
+        </tfoot>
+      </table>
+
+      <div class="section-label">일회성 제외 지출 (총지출 494.5만원에 미포함)</div>
+      <table>
+        <thead><tr><th>항목</th><th style="text-align:right;">금액</th></tr></thead>
+        <tbody>
+          <tr><td>카시트</td><td class="amt">84만원</td></tr>
+          <tr><td>유모차</td><td class="amt">30만원</td></tr>
+          <tr><td>청소기</td><td class="amt">10만원</td></tr>
+          <tr><td>음식물처리기</td><td class="amt">11만원</td></tr>
+        </tbody>
+        <tfoot><tr><td>일회성 합계</td><td class="amt">135만원</td></tr></tfoot>
+      </table>
+
+      <div class="highlight-box">
+        <div class="h-title">가장 크게 줄일 부분</div>
+        <ol>
+          <li><b>배달음식</b> — 현재 87만원 → 목표 약 30만원</li>
+          <li><b>식료품</b> — 현재 66.8만원 → 목표 약 45만원 (배달을 줄이면 장보기가 늘 수 있어 식료품+배달을 함께 관리)</li>
+          <li><b>아이 비필수 구매</b> — 이번 달 옷·장난감·생활용품 구매가 많았음. 다음 달은 기존 물건 활용, 신규 비필수 구매 최소화</li>
+          <li><b>내 옷</b> — 이번 달 20만원 → 다음 달 0원</li>
+          <li><b>병원비</b> — 아이 병원 16.7만원 / 어른 병원 45.8만원은 고정지출이 아니므로 다음 달 기본예산에서 제외. 발생 시 예비비 또는 별도 변동지출로 기록</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card carousel-item" id="panelAug">
+      <div class="card-header">
+        <div class="card-title" style="margin-bottom:0;">2026년 8월 지출</div>
+        <details class="target-details">
+          <summary class="target-link">목표금액 <span class="chev">&rsaquo;</span></summary>
+          <div class="target-details-body">
+      <div class="budget-row">
+        <div class="item"><span class="label">평상시 생활비 목표</span><span class="value">272만원</span></div>
+        <div class="item"><span class="label">비상·예비비</span><span class="value">28만원</span></div>
+        <div class="item"><span class="label">월 최대 지출 목표</span><span class="value">300만원</span></div>
+      </div>
+      <table>
+        <thead><tr><th>항목</th><th style="text-align:right;">목표 금액</th></tr></thead>
+        <tbody>
+          <tr><td>아이 필수생활·식품</td><td class="amt">약 50만원</td></tr>
+          <tr><td>아이 보험</td><td class="amt">12만원</td></tr>
+          <tr><td>아이 옷·장난감 등 비필수</td><td class="amt">약 5만원</td></tr>
+          <tr><td>식료품</td><td class="amt">약 45만원</td></tr>
+          <tr><td>배달음식</td><td class="amt">약 30만원</td></tr>
+          <tr><td>관리비·가스</td><td class="amt">약 27만원</td></tr>
+          <tr><td>강아지·산책</td><td class="amt">약 27만원</td></tr>
+          <tr><td>통신</td><td class="amt">15만원</td></tr>
+          <tr><td>일반 보험</td><td class="amt">35만원</td></tr>
+          <tr><td>이자</td><td class="amt">23만원</td></tr>
+          <tr><td>차량·세차</td><td class="amt">약 3만원</td></tr>
+        </tbody>
+        <tfoot><tr><td>평상시 생활비 목표 합계</td><td class="amt">약 272만원</td></tr></tfoot>
+      </table>
+      <div class="note">목표는 언제든 바뀔 수 있어요. 바뀌어야 하면 말씀해주세요.</div>
+          </div>
+        </details>
+      </div>
+
+      <div class="budget-row">
+        <div class="item"><span class="label">이번 달 지출</span><span class="value">294.8만원</span></div>
+        <div class="item"><span class="label">법카 합계</span><span class="value">106.7만원</span></div>
+        <div class="item"><span class="label">법카 제외</span><span class="value">188.1만원</span></div>
+        <div class="item"><span class="label">잔여 예산</span><span class="value">5.2만원</span></div>
+      </div>
+
+      <div class="cat-grid">
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>아이 필수생활·식품</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">5.4만원<span class="delta save">-70.2만</span><span class="corp-note">법카 5.4만원</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/12</td><td>선호 기저귀 (쿠팡)</td><td><span class="corp-text">법카</span></td><td class="amt">5.4만원</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="3">합계</td><td class="amt">5.4만원</td></tr><tr><td colspan="3" style="font-weight:400;color:var(--text-muted);">법카 5.4만원 · 개인 0만원</td><td></td></tr></tfoot>
+</table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>아이 보험</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">12만원<span class="delta save">0만</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/1</td><td>아이 보험료 (고정, 7월과 동일)</td><td>개인</td><td class="amt">12만원</td></tr>
+      </tbody>
+      </table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>아이 옷·장난감 등 비필수</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">28만원<span class="delta save">-13.6만</span><span class="corp-note">법카 13.8만원</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/12</td><td>아기옷 (현대카드 · 아툭)</td><td>개인</td><td class="amt">2.3만원</td></tr>
+        <tr><td>8/12</td><td>예지 옷(속옷) - VEIMIA (현대카드)</td><td>개인</td><td class="amt">12만원</td></tr>
+        <tr><td>8/10</td><td>선호 장난감 흔들말</td><td><span class="corp-text">법카</span></td><td class="amt">10만원</td></tr>
+        <tr><td>8/9</td><td>선호 장난감 고정걸이</td><td><span class="corp-text">법카</span></td><td class="amt">3.8만원</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="3">합계</td><td class="amt">28만원</td></tr><tr><td colspan="3" style="font-weight:400;color:var(--text-muted);">법카 13.8만원 · 개인 14.3만원</td><td></td></tr></tfoot>
+</table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>식료품</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">41.1만원<span class="delta save">-25.7만</span><span class="corp-note">법카 32.1만원</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/12</td><td>단호박 (네이버 · 옥키, 공통 식자재)</td><td>개인</td><td class="amt">8만원</td></tr>
+        <tr><td>8/12</td><td>선호용 땅콩버터 (쿠팡)</td><td><span class="corp-text">법카</span></td><td class="amt">1.4만원</td></tr>
+        <tr><td>8/12</td><td>시저샐러드소스 (쿠팡)</td><td>개인</td><td class="amt">1만원</td></tr>
+        <tr><td>8/11</td><td>편의점</td><td><span class="corp-text">법카</span></td><td class="amt">0.5만원</td></tr>
+        <tr><td>8/11</td><td>장인한과 (간식)</td><td><span class="corp-text">법카</span></td><td class="amt">1.7만원</td></tr>
+        <tr><td>8/11</td><td>김치천</td><td><span class="corp-text">법카</span></td><td class="amt">2만원</td></tr>
+        <tr><td>8/11</td><td>간장새우장</td><td><span class="corp-text">법카</span></td><td class="amt">1.5만원</td></tr>
+        <tr><td>8/9</td><td>복숭아</td><td><span class="corp-text">법카</span></td><td class="amt">1.6만원</td></tr>
+        <tr><td>8/9</td><td>사과</td><td><span class="corp-text">법카</span></td><td class="amt">1만원</td></tr>
+        <tr><td>8/9</td><td>참와</td><td><span class="corp-text">법카</span></td><td class="amt">0.7만원</td></tr>
+        <tr><td>8/8</td><td>정육</td><td><span class="corp-text">법카</span></td><td class="amt">6.8만원</td></tr>
+        <tr><td>8/7</td><td>더단백초코</td><td><span class="corp-text">법카</span></td><td class="amt">2.7만원</td></tr>
+        <tr><td>8/6</td><td>샐러드용 채소</td><td><span class="corp-text">법카</span></td><td class="amt">1.2만원</td></tr>
+        <tr><td>8/4</td><td>이마트</td><td><span class="corp-text">법카</span></td><td class="amt">6.6만원</td></tr>
+        <tr><td>8/2</td><td>콜라</td><td><span class="corp-text">법카</span></td><td class="amt">1.9만원</td></tr>
+        <tr><td>8/1</td><td>쾌변</td><td><span class="corp-text">법카</span></td><td class="amt">1.6만원</td></tr>
+        <tr><td>8/1</td><td>소와나무</td><td><span class="corp-text">법카</span></td><td class="amt">0.5만원</td></tr>
+        <tr><td>8/1</td><td>바나나</td><td><span class="corp-text">법카</span></td><td class="amt">0.5만원</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="3">합계</td><td class="amt">41.1만원</td></tr><tr><td colspan="3" style="font-weight:400;color:var(--text-muted);">법카 32.1만원 · 개인 9만원</td><td></td></tr></tfoot>
+</table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>배달음식</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">25.2만원<span class="delta save">-61.8만</span><span class="corp-note">법카 25.2만원</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/11</td><td>투썸플레이스</td><td><span class="corp-text">법카</span></td><td class="amt">2.1만원</td></tr>
+        <tr><td>8/10</td><td>배달 도넛</td><td><span class="corp-text">법카</span></td><td class="amt">2.1만원</td></tr>
+        <tr><td>8/9</td><td>배달 타코</td><td><span class="corp-text">법카</span></td><td class="amt">5.9만원</td></tr>
+        <tr><td>8/7</td><td>배달 떡볶이</td><td><span class="corp-text">법카</span></td><td class="amt">1.7만원</td></tr>
+        <tr><td>8/5</td><td>배달 설빙</td><td><span class="corp-text">법카</span></td><td class="amt">1.7만원</td></tr>
+        <tr><td>8/2</td><td>배달 설빙</td><td><span class="corp-text">법카</span></td><td class="amt">7.8만원</td></tr>
+        <tr><td>8/2</td><td>배달 두찜</td><td><span class="corp-text">법카</span></td><td class="amt">2.1만원</td></tr>
+        <tr><td>8/1</td><td>배달 밥버거</td><td><span class="corp-text">법카</span></td><td class="amt">1.7만원</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="3">합계</td><td class="amt">25.2만원</td></tr><tr><td colspan="3" style="font-weight:400;color:var(--text-muted);">법카 25.2만원 · 개인 0만원</td><td></td></tr></tfoot>
+</table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>관리비·가스</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">0만원<span class="delta save">-26.3만</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><tbody><tr><td class="empty">아직 기록된 내역이 없습니다.</td></tr></tbody></table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>강아지·산책</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">35.7만원<span class="delta over">+9만</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/12</td><td>할리우드 목욕 (현금)</td><td>개인</td><td class="amt">28.7만원</td></tr>
+        <tr><td>8/10</td><td>할리우드 산책 (현금)</td><td>개인</td><td class="amt">2만원</td></tr>
+        <tr><td>8/4</td><td>할리우드 산책 (현금)</td><td>개인</td><td class="amt">1만원</td></tr>
+        <tr><td>8/3</td><td>할리우드 산책 (현금)</td><td>개인</td><td class="amt">1만원</td></tr>
+        <tr><td>8/2</td><td>할리우드 산책 (현금)</td><td>개인</td><td class="amt">1만원</td></tr>
+        <tr><td>8/1</td><td>할리우드 산책 (현금)</td><td>개인</td><td class="amt">2만원</td></tr>
+      </tbody>
+      </table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>통신</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">15만원<span class="delta save">0만</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/1</td><td>통신비 (고정, 7월과 동일)</td><td>개인</td><td class="amt">15만원</td></tr>
+      </tbody>
+      </table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>일반 보험</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">35만원<span class="delta save">0만</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/1</td><td>보험료 (고정, 7월과 동일)</td><td>개인</td><td class="amt">35만원</td></tr>
+      </tbody>
+      </table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>이자</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">26.8만원<span class="delta over">+3.8만</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/6</td><td>이자 (현금, 합산)</td><td>개인</td><td class="amt">26.8만원</td></tr>
+      </tbody>
+      </table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>차량·세차</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">9.1만원<span class="delta over">+6.1만</span><span class="corp-note">법카 9.1만원</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/11</td><td>주유</td><td><span class="corp-text">법카</span></td><td class="amt">8만원</td></tr>
+        <tr><td>8/6</td><td>주차</td><td><span class="corp-text">법카</span></td><td class="amt">1.1만원</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="3">합계</td><td class="amt">9.1만원</td></tr><tr><td colspan="3" style="font-weight:400;color:var(--text-muted);">법카 9.1만원 · 개인 0만원</td><td></td></tr></tfoot>
+</table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>병원</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">12.4만원<span class="delta save">-50만</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/12</td><td>예지 병원 - 유시원마취통증의학과 (현대카드)</td><td>개인</td><td class="amt">12.1만원</td></tr>
+        <tr><td>8/10</td><td>어른 병원 (현금)</td><td>개인</td><td class="amt">0.3만원</td></tr>
+      </tbody>
+      </table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>개인(용돈)</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">38.2만원<span class="delta over">+38.2만</span><span class="corp-note">법카 10.3만원</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/12</td><td>립스틱 (네이버 · BRAYE)</td><td>개인</td><td class="amt">2.7만원</td></tr>
+        <tr><td>8/12</td><td>미용실 (남편 카드)</td><td>개인</td><td class="amt">25.2만원</td></tr>
+        <tr><td>8/6</td><td>헤이 소품</td><td><span class="corp-text">법카</span></td><td class="amt">5.7만원</td></tr>
+        <tr><td>8/6</td><td>스시 (개인 식사)</td><td><span class="corp-text">법카</span></td><td class="amt">3.1만원</td></tr>
+        <tr><td>8/1</td><td>헬스스트랩</td><td><span class="corp-text">법카</span></td><td class="amt">1.5만원</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="3">합계</td><td class="amt">38.2만원</td></tr><tr><td colspan="3" style="font-weight:400;color:var(--text-muted);">법카 10.3만원 · 개인 27.9만원</td><td></td></tr></tfoot>
+</table>
+    </div>
+  </details>
+</div>
+<div class="cat-cell">
+  <details class="cat-details">
+    <summary>
+      <span class="cat-name-line"><span>생활용품</span><span class="chev">&rsaquo;</span></span>
+      <span class="cat-amt-line">10.9만원<span class="delta over">+10.9만</span><span class="corp-note">법카 10.9만원</span></span>
+    </summary>
+    <div class="cat-details-body">
+      <table><thead><tr><th>날짜</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead><tbody>
+        <tr><td>8/11</td><td>마카</td><td><span class="corp-text">법카</span></td><td class="amt">0.5만원</td></tr>
+        <tr><td>8/11</td><td>마카홀더</td><td><span class="corp-text">법카</span></td><td class="amt">0.7만원</td></tr>
+        <tr><td>8/10</td><td>크린콜</td><td><span class="corp-text">법카</span></td><td class="amt">1.2만원</td></tr>
+        <tr><td>8/10</td><td>살균제</td><td><span class="corp-text">법카</span></td><td class="amt">1.4만원</td></tr>
+        <tr><td>8/8</td><td>세제</td><td><span class="corp-text">법카</span></td><td class="amt">1.4만원</td></tr>
+        <tr><td>8/7</td><td>물티슈</td><td><span class="corp-text">법카</span></td><td class="amt">3.3만원</td></tr>
+        <tr><td>8/1</td><td>멀티탭</td><td><span class="corp-text">법카</span></td><td class="amt">2.4만원</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="3">합계</td><td class="amt">10.9만원</td></tr><tr><td colspan="3" style="font-weight:400;color:var(--text-muted);">법카 10.9만원 · 개인 0만원</td><td></td></tr></tfoot>
+</table>
+    </div>
+  </details>
+</div>
+      </div>
+
+      <div class="section-label">실제 지출</div>
+      <table>
+        <thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead>
+        <tbody>
+          <tr><td>8/12</td><td>개인(용돈)</td><td>립스틱 (네이버 · BRAYE)</td><td>개인</td><td class="amt">2.7만원</td></tr>
+          <tr><td>8/12</td><td>식료품</td><td>단호박 (네이버 · 옥키, 공통 식자재)</td><td>개인</td><td class="amt">8만원</td></tr>
+          <tr><td>8/12</td><td>아이 옷·장난감 등 비필수</td><td>아기옷 (현대카드 · 아툭)</td><td>개인</td><td class="amt">2.3만원</td></tr>
+          <tr><td>8/12</td><td>병원</td><td>예지 병원 - 유시원마취통증의학과 (현대카드)</td><td>개인</td><td class="amt">12.1만원</td></tr>
+          <tr><td>8/12</td><td>아이 옷·장난감 등 비필수</td><td>예지 옷(속옷) - VEIMIA (현대카드)</td><td>개인</td><td class="amt">12만원</td></tr>
+          <tr><td>8/12</td><td>강아지·산책</td><td>할리우드 목욕 (현금)</td><td>개인</td><td class="amt">28.7만원</td></tr>
+          <tr><td>8/12</td><td>식료품</td><td>선호용 땅콩버터 (쿠팡)</td><td><span class="corp-text">법카</span></td><td class="amt">1.4만원</td></tr>
+          <tr><td>8/12</td><td>개인(용돈)</td><td>미용실 (남편 카드)</td><td>개인</td><td class="amt">25.2만원</td></tr>
+          <tr><td>8/12</td><td>식료품</td><td>시저샐러드소스 (쿠팡)</td><td>개인</td><td class="amt">1만원</td></tr>
+          <tr><td>8/12</td><td>아이 필수생활·식품</td><td>선호 기저귀 (쿠팡)</td><td><span class="corp-text">법카</span></td><td class="amt">5.4만원</td></tr>
+          <tr><td>8/11</td><td>차량·세차</td><td>주유</td><td><span class="corp-text">법카</span></td><td class="amt">8만원</td></tr>
+          <tr><td>8/11</td><td>식료품</td><td>편의점</td><td><span class="corp-text">법카</span></td><td class="amt">0.5만원</td></tr>
+          <tr><td>8/11</td><td>식료품</td><td>장인한과 (간식)</td><td><span class="corp-text">법카</span></td><td class="amt">1.7만원</td></tr>
+          <tr><td>8/11</td><td>배달음식</td><td>투썸플레이스</td><td><span class="corp-text">법카</span></td><td class="amt">2.1만원</td></tr>
+          <tr><td>8/11</td><td>식료품</td><td>김치천</td><td><span class="corp-text">법카</span></td><td class="amt">2만원</td></tr>
+          <tr><td>8/11</td><td>식료품</td><td>간장새우장</td><td><span class="corp-text">법카</span></td><td class="amt">1.5만원</td></tr>
+          <tr><td>8/11</td><td>생활용품</td><td>마카</td><td><span class="corp-text">법카</span></td><td class="amt">0.5만원</td></tr>
+          <tr><td>8/11</td><td>생활용품</td><td>마카홀더</td><td><span class="corp-text">법카</span></td><td class="amt">0.7만원</td></tr>
+          <tr><td>8/10</td><td>강아지·산책</td><td>할리우드 산책 (현금)</td><td>개인</td><td class="amt">2만원</td></tr>
+          <tr><td>8/10</td><td>병원</td><td>어른 병원 (현금)</td><td>개인</td><td class="amt">0.3만원</td></tr>
+          <tr><td>8/10</td><td>배달음식</td><td>배달 도넛</td><td><span class="corp-text">법카</span></td><td class="amt">2.1만원</td></tr>
+          <tr><td>8/10</td><td>아이 옷·장난감 등 비필수</td><td>선호 장난감 흔들말</td><td><span class="corp-text">법카</span></td><td class="amt">10만원</td></tr>
+          <tr><td>8/10</td><td>생활용품</td><td>크린콜</td><td><span class="corp-text">법카</span></td><td class="amt">1.2만원</td></tr>
+          <tr><td>8/10</td><td>생활용품</td><td>살균제</td><td><span class="corp-text">법카</span></td><td class="amt">1.4만원</td></tr>
+          <tr><td>8/9</td><td>아이 옷·장난감 등 비필수</td><td>선호 장난감 고정걸이</td><td><span class="corp-text">법카</span></td><td class="amt">3.8만원</td></tr>
+          <tr><td>8/9</td><td>배달음식</td><td>배달 타코</td><td><span class="corp-text">법카</span></td><td class="amt">5.9만원</td></tr>
+          <tr><td>8/9</td><td>식료품</td><td>복숭아</td><td><span class="corp-text">법카</span></td><td class="amt">1.6만원</td></tr>
+          <tr><td>8/9</td><td>식료품</td><td>사과</td><td><span class="corp-text">법카</span></td><td class="amt">1만원</td></tr>
+          <tr><td>8/9</td><td>식료품</td><td>참와</td><td><span class="corp-text">법카</span></td><td class="amt">0.7만원</td></tr>
+          <tr><td>8/8</td><td>식료품</td><td>정육</td><td><span class="corp-text">법카</span></td><td class="amt">6.8만원</td></tr>
+          <tr><td>8/8</td><td>생활용품</td><td>세제</td><td><span class="corp-text">법카</span></td><td class="amt">1.4만원</td></tr>
+          <tr><td>8/7</td><td>배달음식</td><td>배달 떡볶이</td><td><span class="corp-text">법카</span></td><td class="amt">1.7만원</td></tr>
+          <tr><td>8/7</td><td>식료품</td><td>더단백초코</td><td><span class="corp-text">법카</span></td><td class="amt">2.7만원</td></tr>
+          <tr><td>8/7</td><td>생활용품</td><td>물티슈</td><td><span class="corp-text">법카</span></td><td class="amt">3.3만원</td></tr>
+          <tr><td>8/6</td><td>이자</td><td>이자 (현금, 합산)</td><td>개인</td><td class="amt">26.8만원</td></tr>
+          <tr><td>8/6</td><td>개인(용돈)</td><td>헤이 소품</td><td><span class="corp-text">법카</span></td><td class="amt">5.7만원</td></tr>
+          <tr><td>8/6</td><td>개인(용돈)</td><td>스시 (개인 식사)</td><td><span class="corp-text">법카</span></td><td class="amt">3.1만원</td></tr>
+          <tr><td>8/6</td><td>차량·세차</td><td>주차</td><td><span class="corp-text">법카</span></td><td class="amt">1.1만원</td></tr>
+          <tr><td>8/6</td><td>식료품</td><td>샐러드용 채소</td><td><span class="corp-text">법카</span></td><td class="amt">1.2만원</td></tr>
+          <tr><td>8/5</td><td>배달음식</td><td>배달 설빙</td><td><span class="corp-text">법카</span></td><td class="amt">1.7만원</td></tr>
+          <tr><td>8/4</td><td>강아지·산책</td><td>할리우드 산책 (현금)</td><td>개인</td><td class="amt">1만원</td></tr>
+          <tr><td>8/4</td><td>식료품</td><td>이마트</td><td><span class="corp-text">법카</span></td><td class="amt">6.6만원</td></tr>
+          <tr><td>8/3</td><td>강아지·산책</td><td>할리우드 산책 (현금)</td><td>개인</td><td class="amt">1만원</td></tr>
+          <tr><td>8/2</td><td>강아지·산책</td><td>할리우드 산책 (현금)</td><td>개인</td><td class="amt">1만원</td></tr>
+          <tr><td>8/2</td><td>배달음식</td><td>배달 설빙</td><td><span class="corp-text">법카</span></td><td class="amt">7.8만원</td></tr>
+          <tr><td>8/2</td><td>배달음식</td><td>배달 두찜</td><td><span class="corp-text">법카</span></td><td class="amt">2.1만원</td></tr>
+          <tr><td>8/2</td><td>식료품</td><td>콜라</td><td><span class="corp-text">법카</span></td><td class="amt">1.9만원</td></tr>
+          <tr><td>8/1</td><td>강아지·산책</td><td>할리우드 산책 (현금)</td><td>개인</td><td class="amt">2만원</td></tr>
+          <tr><td>8/1</td><td>배달음식</td><td>배달 밥버거</td><td><span class="corp-text">법카</span></td><td class="amt">1.7만원</td></tr>
+          <tr><td>8/1</td><td>식료품</td><td>쾌변</td><td><span class="corp-text">법카</span></td><td class="amt">1.6만원</td></tr>
+          <tr><td>8/1</td><td>식료품</td><td>소와나무</td><td><span class="corp-text">법카</span></td><td class="amt">0.5만원</td></tr>
+          <tr><td>8/1</td><td>식료품</td><td>바나나</td><td><span class="corp-text">법카</span></td><td class="amt">0.5만원</td></tr>
+          <tr><td>8/1</td><td>개인(용돈)</td><td>헬스스트랩</td><td><span class="corp-text">법카</span></td><td class="amt">1.5만원</td></tr>
+          <tr><td>8/1</td><td>생활용품</td><td>멀티탭</td><td><span class="corp-text">법카</span></td><td class="amt">2.4만원</td></tr>
+          <tr><td>8/1</td><td>아이 보험</td><td>아이 보험료 (고정, 7월과 동일)</td><td>개인</td><td class="amt">12만원</td></tr>
+          <tr><td>8/1</td><td>일반 보험</td><td>보험료 (고정, 7월과 동일)</td><td>개인</td><td class="amt">35만원</td></tr>
+          <tr><td>8/1</td><td>통신</td><td>통신비 (고정, 7월과 동일)</td><td>개인</td><td class="amt">15만원</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="4">총지출</td><td class="amt">294.8만원</td></tr></tfoot>
+      </table>
+    </div>
+    </div>
+    <div class="dots">
+      <label for="tabJul" class="dot dot-jul"></label>
+      <label for="tabAug" class="dot dot-aug"></label>
+    </div>
+  </div>
+</body>
+</html>
