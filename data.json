@@ -5,455 +5,520 @@
       "category": "개인(용돈)",
       "desc": "립스틱 (네이버 · BRAYE)",
       "payment": "personal",
-      "amount": 2.69
+      "amount": 2.69,
+      "id": 1
     },
     {
       "date": "8/12",
       "category": "식료품",
       "desc": "단호박 (네이버 · 옥키, 공통 식자재)",
       "payment": "personal",
-      "amount": 7.99
+      "amount": 7.99,
+      "id": 2
     },
     {
       "date": "8/12",
       "category": "아이 옷·장난감 등 비필수",
       "desc": "아기옷 (현대카드 · 아툭)",
       "payment": "personal",
-      "amount": 2.3
+      "amount": 2.3,
+      "id": 3
     },
     {
       "date": "8/12",
       "category": "병원",
       "desc": "예지 병원 - 유시원마취통증의학과 (현대카드)",
       "payment": "personal",
-      "amount": 12.12
+      "amount": 12.12,
+      "id": 4
     },
     {
       "date": "8/12",
       "category": "아이 옷·장난감 등 비필수",
       "desc": "예지 옷(속옷) - VEIMIA (현대카드)",
       "payment": "personal",
-      "amount": 11.99
+      "amount": 11.99,
+      "id": 5
     },
     {
       "date": "8/12",
       "category": "강아지·산책",
       "desc": "할리우드 목욕 (현금)",
       "payment": "personal",
-      "amount": 28.7
+      "amount": 28.7,
+      "id": 6
     },
     {
       "date": "8/10",
       "category": "강아지·산책",
       "desc": "할리우드 산책 (현금)",
       "payment": "personal",
-      "amount": 2
+      "amount": 2,
+      "id": 7
     },
     {
       "date": "8/4",
       "category": "강아지·산책",
       "desc": "할리우드 산책 (현금)",
       "payment": "personal",
-      "amount": 1
+      "amount": 1,
+      "id": 8
     },
     {
       "date": "8/3",
       "category": "강아지·산책",
       "desc": "할리우드 산책 (현금)",
       "payment": "personal",
-      "amount": 1
+      "amount": 1,
+      "id": 9
     },
     {
       "date": "8/2",
       "category": "강아지·산책",
       "desc": "할리우드 산책 (현금)",
       "payment": "personal",
-      "amount": 1
+      "amount": 1,
+      "id": 10
     },
     {
       "date": "8/1",
       "category": "강아지·산책",
       "desc": "할리우드 산책 (현금)",
       "payment": "personal",
-      "amount": 2
+      "amount": 2,
+      "id": 11
     },
     {
       "date": "8/10",
       "category": "병원",
       "desc": "어른 병원 (현금)",
       "payment": "personal",
-      "amount": 0.33
+      "amount": 0.33,
+      "id": 12
     },
     {
       "date": "8/6",
       "category": "이자",
       "desc": "이자 (현금, 합산)",
       "payment": "personal",
-      "amount": 26.8226
+      "amount": 26.8226,
+      "id": 13
     },
     {
       "date": "8/4",
       "category": "식료품",
       "desc": "이마트",
       "payment": "corp",
-      "amount": 6.645
+      "amount": 6.645,
+      "id": 14
     },
     {
       "date": "8/6",
       "category": "개인(용돈)",
       "desc": "헤이 소품",
       "payment": "corp",
-      "amount": 5.7
+      "amount": 5.7,
+      "id": 15
     },
     {
       "date": "8/6",
       "category": "개인(용돈)",
       "desc": "스시 (개인 식사)",
       "payment": "corp",
-      "amount": 3.1
+      "amount": 3.1,
+      "id": 16
     },
     {
       "date": "8/6",
       "category": "차량·세차",
       "desc": "주차",
       "payment": "corp",
-      "amount": 1.1
+      "amount": 1.1,
+      "id": 17
     },
     {
       "date": "8/9",
       "category": "아이 옷·장난감 등 비필수",
       "desc": "선호 장난감 고정걸이",
       "payment": "corp",
-      "amount": 3.76
+      "amount": 3.76,
+      "id": 18
     },
     {
       "date": "8/11",
       "category": "차량·세차",
       "desc": "주유",
       "payment": "corp",
-      "amount": 8
+      "amount": 8,
+      "id": 19
     },
     {
       "date": "8/11",
       "category": "식료품",
       "desc": "편의점",
       "payment": "corp",
-      "amount": 0.49
+      "amount": 0.49,
+      "id": 20
     },
     {
       "date": "8/11",
       "category": "식료품",
       "desc": "장인한과 (간식)",
       "payment": "corp",
-      "amount": 1.7
+      "amount": 1.7,
+      "id": 21
     },
     {
       "date": "8/11",
       "category": "배달음식",
       "desc": "투썸플레이스",
       "payment": "corp",
-      "amount": 2.15
+      "amount": 2.15,
+      "id": 22
     },
     {
       "date": "8/10",
       "category": "배달음식",
       "desc": "배달 도넛",
       "payment": "corp",
-      "amount": 2.08
+      "amount": 2.08,
+      "id": 23
     },
     {
       "date": "8/9",
       "category": "배달음식",
       "desc": "배달 타코",
       "payment": "corp",
-      "amount": 5.91
+      "amount": 5.91,
+      "id": 24
     },
     {
       "date": "8/8",
       "category": "식료품",
       "desc": "정육",
       "payment": "corp",
-      "amount": 6.81
+      "amount": 6.81,
+      "id": 25
     },
     {
       "date": "8/7",
       "category": "배달음식",
       "desc": "배달 떡볶이",
       "payment": "corp",
-      "amount": 1.71
+      "amount": 1.71,
+      "id": 26
     },
     {
       "date": "8/5",
       "category": "배달음식",
       "desc": "배달 설빙",
       "payment": "corp",
-      "amount": 1.7
+      "amount": 1.7,
+      "id": 27
     },
     {
       "date": "8/2",
       "category": "배달음식",
       "desc": "배달 설빙",
       "payment": "corp",
-      "amount": 7.8333
+      "amount": 7.8333,
+      "id": 28
     },
     {
       "date": "8/2",
       "category": "배달음식",
       "desc": "배달 두찜",
       "payment": "corp",
-      "amount": 2.09
+      "amount": 2.09,
+      "id": 29
     },
     {
       "date": "8/1",
       "category": "배달음식",
       "desc": "배달 밥버거",
       "payment": "corp",
-      "amount": 1.68
+      "amount": 1.68,
+      "id": 30
     },
     {
       "date": "8/11",
       "category": "식료품",
       "desc": "김치천",
       "payment": "corp",
-      "amount": 1.952
+      "amount": 1.952,
+      "id": 31
     },
     {
       "date": "8/11",
       "category": "식료품",
       "desc": "간장새우장",
       "payment": "corp",
-      "amount": 1.48
+      "amount": 1.48,
+      "id": 32
     },
     {
       "date": "8/11",
       "category": "생활용품",
       "desc": "마카",
       "payment": "corp",
-      "amount": 0.477
+      "amount": 0.477,
+      "id": 33
     },
     {
       "date": "8/11",
       "category": "생활용품",
       "desc": "마카홀더",
       "payment": "corp",
-      "amount": 0.688
+      "amount": 0.688,
+      "id": 34
     },
     {
       "date": "8/10",
       "category": "아이 옷·장난감 등 비필수",
       "desc": "선호 장난감 흔들말",
       "payment": "corp",
-      "amount": 9.99
+      "amount": 9.99,
+      "id": 35
     },
     {
       "date": "8/10",
       "category": "생활용품",
       "desc": "크린콜",
       "payment": "corp",
-      "amount": 1.212
+      "amount": 1.212,
+      "id": 36
     },
     {
       "date": "8/10",
       "category": "생활용품",
       "desc": "살균제",
       "payment": "corp",
-      "amount": 1.42
+      "amount": 1.42,
+      "id": 37
     },
     {
       "date": "8/9",
       "category": "식료품",
       "desc": "복숭아",
       "payment": "corp",
-      "amount": 1.588
+      "amount": 1.588,
+      "id": 38
     },
     {
       "date": "8/9",
       "category": "식료품",
       "desc": "사과",
       "payment": "corp",
-      "amount": 0.99
+      "amount": 0.99,
+      "id": 39
     },
     {
       "date": "8/9",
       "category": "식료품",
       "desc": "참와",
       "payment": "corp",
-      "amount": 0.699
+      "amount": 0.699,
+      "id": 40
     },
     {
       "date": "8/8",
       "category": "생활용품",
       "desc": "세제",
       "payment": "corp",
-      "amount": 1.449
+      "amount": 1.449,
+      "id": 41
     },
     {
       "date": "8/7",
       "category": "식료품",
       "desc": "더단백초코",
       "payment": "corp",
-      "amount": 2.66
+      "amount": 2.66,
+      "id": 42
     },
     {
       "date": "8/7",
       "category": "생활용품",
       "desc": "물티슈",
       "payment": "corp",
-      "amount": 3.28
+      "amount": 3.28,
+      "id": 43
     },
     {
       "date": "8/6",
       "category": "식료품",
       "desc": "샐러드용 채소",
       "payment": "corp",
-      "amount": 1.208
+      "amount": 1.208,
+      "id": 44
     },
     {
       "date": "8/2",
       "category": "식료품",
       "desc": "콜라",
       "payment": "corp",
-      "amount": 1.874
+      "amount": 1.874,
+      "id": 45
     },
     {
       "date": "8/1",
       "category": "식료품",
       "desc": "쾌변",
       "payment": "corp",
-      "amount": 1.578
+      "amount": 1.578,
+      "id": 46
     },
     {
       "date": "8/1",
       "category": "식료품",
       "desc": "소와나무",
       "payment": "corp",
-      "amount": 0.496
+      "amount": 0.496,
+      "id": 47
     },
     {
       "date": "8/1",
       "category": "식료품",
       "desc": "바나나",
       "payment": "corp",
-      "amount": 0.499
+      "amount": 0.499,
+      "id": 48
     },
     {
       "date": "8/1",
       "category": "개인(용돈)",
       "desc": "헬스스트랩",
       "payment": "corp",
-      "amount": 1.54
+      "amount": 1.54,
+      "id": 49
     },
     {
       "date": "8/1",
       "category": "생활용품",
       "desc": "멀티탭",
       "payment": "corp",
-      "amount": 2.39
+      "amount": 2.39,
+      "id": 50
     },
     {
       "date": "8/12",
       "category": "식료품",
       "desc": "선호용 땅콩버터 (쿠팡)",
       "payment": "corp",
-      "amount": 1.43
+      "amount": 1.43,
+      "id": 51
     },
     {
       "date": "8/12",
       "category": "개인(용돈)",
       "desc": "미용실 (남편 카드)",
       "payment": "personal",
-      "amount": 25.17
+      "amount": 25.17,
+      "id": 52
     },
     {
       "date": "8/12",
       "category": "식료품",
       "desc": "시저샐러드소스 (쿠팡)",
       "payment": "personal",
-      "amount": 0.965
+      "amount": 0.965,
+      "id": 53
     },
     {
       "date": "8/12",
       "category": "아이 필수생활·식품",
       "desc": "선호 기저귀 (쿠팡)",
       "payment": "corp",
-      "amount": 5.355
+      "amount": 5.355,
+      "id": 54
     },
     {
       "date": "8/1",
       "category": "아이 보험",
       "desc": "아이 보험료 (고정, 7월과 동일)",
       "payment": "personal",
-      "amount": 12
+      "amount": 12,
+      "id": 55
     },
     {
       "date": "8/1",
       "category": "일반 보험",
       "desc": "보험료 (고정, 7월과 동일)",
       "payment": "personal",
-      "amount": 35
+      "amount": 35,
+      "id": 56
     },
     {
       "date": "8/1",
       "category": "통신",
       "desc": "통신비 (고정, 7월과 동일)",
       "payment": "personal",
-      "amount": 15
+      "amount": 15,
+      "id": 57
     },
     {
       "date": "8/14",
       "category": "강아지·산책",
       "desc": "강아지 사료 및 간식 (네이버페이 · 남편)",
       "payment": "personal",
-      "amount": 11.1303
+      "amount": 11.1303,
+      "id": 58
     },
     {
       "date": "8/13",
       "category": "생활용품",
       "desc": "트리트먼트 (쿠팡)",
       "payment": "corp",
-      "amount": 1.359
+      "amount": 1.359,
+      "id": 59
     },
     {
       "date": "8/13",
       "category": "아이 옷·장난감 등 비필수",
       "desc": "아기책 (쿠팡)",
       "payment": "corp",
-      "amount": 1.656
+      "amount": 1.656,
+      "id": 60
     },
     {
       "date": "8/13",
       "category": "아이 옷·장난감 등 비필수",
       "desc": "아기책 (쿠팡)",
       "payment": "corp",
-      "amount": 1.744
+      "amount": 1.744,
+      "id": 61
     },
     {
       "date": "8/13",
       "category": "아이 필수생활·식품",
       "desc": "아기 간식 (쿠팡)",
       "payment": "corp",
-      "amount": 1.59
+      "amount": 1.59,
+      "id": 62
     },
     {
       "date": "8/13",
       "category": "아이 필수생활·식품",
       "desc": "아기 간식 (쿠팡)",
       "payment": "corp",
-      "amount": 0.99
+      "amount": 0.99,
+      "id": 63
     },
     {
       "date": "8/13",
       "category": "식료품",
       "desc": "바나나 (쿠팡)",
       "payment": "corp",
-      "amount": 0.482
+      "amount": 0.482,
+      "id": 64
     },
     {
       "date": "8/13",
       "category": "생활용품",
       "desc": "생리대 (쿠팡)",
       "payment": "corp",
-      "amount": 1.4
+      "amount": 1.4,
+      "id": 65
     }
   ],
   "JUL_MAP": {

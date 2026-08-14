@@ -99,6 +99,22 @@
   .corp-text { color: #5a62a8; font-weight: 700; white-space: nowrap; }
   @media (prefers-color-scheme: dark) { .corp-text { color: #9299de; } }
 
+  .tx-edit-select, .tx-edit-input {
+    width: 100%; min-width: 64px; border: 1px solid transparent; background: transparent; color: var(--text);
+    font: inherit; font-size: 12.5px; padding: 4px 5px; border-radius: 6px; cursor: pointer;
+    text-overflow: ellipsis;
+  }
+  .tx-edit-input { cursor: text; }
+  #txBody td:nth-child(2) { max-width: 90px; }
+  #txBody td:nth-child(3) { max-width: 110px; }
+  .tx-edit-select:hover, .tx-edit-input:hover { background: var(--header-bg); }
+  .tx-edit-select:focus, .tx-edit-input:focus {
+    outline: none; border-color: var(--accent); background: var(--card-bg); cursor: auto;
+  }
+  tr.row-saving { opacity: 0.5; }
+  tr.row-saved td { transition: background-color .3s; background-color: rgba(47,125,92,0.15); }
+  tr.row-error td { transition: background-color .3s; background-color: rgba(179,84,62,0.15); }
+
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 6px; }
   thead th {
     text-align: left;
@@ -559,7 +575,18 @@
     } else {
       txBody.innerHTML = sortDesc(tx).map(function (t) {
         var payHtml = t.payment === 'corp' ? '<span class="corp-text">법카</span>' : '개인';
-        return '<tr><td>' + t.date + '</td><td>' + t.category + '</td><td>' + escapeHtml(t.desc) + '</td><td>' + payHtml + '</td><td class="amt">' + fmt(t.amount) + '만원</td></tr>';
+        var catOptions = CATEGORIES.map(function (cat) {
+          return '<option value="' + cat + '"' + (cat === t.category ? ' selected' : '') + '>' + cat + '</option>';
+        }).join('');
+        return (
+          '<tr data-id="' + t.id + '">' +
+          '<td>' + t.date + '</td>' +
+          '<td><select class="tx-edit-select" data-field="category">' + catOptions + '</select></td>' +
+          '<td><input type="text" class="tx-edit-input" data-field="desc" value="' + escapeHtml(t.desc) + '"></td>' +
+          '<td>' + payHtml + '</td>' +
+          '<td class="amt">' + fmt(t.amount) + '만원</td>' +
+          '</tr>'
+        );
       }).join('');
       txFoot.innerHTML = '<tr><td colspan="4">총지출</td><td class="amt">' + fmt(total) + '만원</td></tr>';
     }
@@ -761,8 +788,10 @@
       })
       .then(function (fileInfo) {
         var currentData = JSON.parse(b64DecodeUnicode(fileInfo.content));
+        var nextId = currentData.AUG_TX.reduce(function (m, t) { return Math.max(m, t.id || 0); }, 0) + 1;
         newEntries.forEach(function (c) {
           currentData.AUG_TX.push({
+            id: nextId++,
             date: c.date,
             category: c.category,
             desc: c.desc,
@@ -800,6 +829,91 @@
     if (valid.length === 0) { showStatus('저장할 항목이 없어요. 금액과 내역을 확인해주세요.', 'err'); return; }
     saveAllToGithub(valid);
   });
+
+  // ---------- inline edit in 실제 지출 table (category / desc) ----------
+  function updateSingleEntry(id, patch, rowEl) {
+    var token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      sheetOverlay.hidden = false;
+      showTokenSection();
+      revertRow(rowEl, id);
+      return;
+    }
+    var apiUrl = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH;
+    rowEl.classList.add('row-saving');
+    rowEl.classList.remove('row-saved', 'row-error');
+
+    fetch(apiUrl, { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' } })
+      .then(function (r) {
+        if (!r.ok) throw new Error('불러오기 실패 (' + r.status + ')');
+        return r.json();
+      })
+      .then(function (fileInfo) {
+        var currentData = JSON.parse(b64DecodeUnicode(fileInfo.content));
+        var entry = currentData.AUG_TX.find(function (t) { return t.id === id; });
+        if (!entry) throw new Error('해당 항목을 찾을 수 없어요');
+        Object.assign(entry, patch);
+        var newContentStr = JSON.stringify(currentData, null, 2);
+        return fetch(apiUrl, {
+          method: 'PUT',
+          headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: id + '번 항목 수정 (' + Object.keys(patch).join(', ') + ')',
+            content: b64EncodeUnicode(newContentStr),
+            sha: fileInfo.sha,
+          }),
+        }).then(function (r) {
+          if (!r.ok) return r.json().then(function (e) { throw new Error(e.message || ('저장 실패 ' + r.status)); });
+          return currentData;
+        });
+      })
+      .then(function (updatedData) {
+        state.data = updatedData;
+        renderAll(updatedData);
+        var newRow = document.querySelector('#txBody tr[data-id="' + id + '"]');
+        if (newRow) {
+          newRow.classList.add('row-saved');
+          setTimeout(function () { newRow.classList.remove('row-saved'); }, 1500);
+        }
+      })
+      .catch(function (err) {
+        rowEl.classList.remove('row-saving');
+        rowEl.classList.add('row-error');
+        revertRow(rowEl, id);
+        alert('저장 실패: ' + err.message);
+        setTimeout(function () { rowEl.classList.remove('row-error'); }, 2000);
+      });
+  }
+
+  function revertRow(rowEl, id) {
+    if (!state.data) return;
+    var entry = state.data.AUG_TX.find(function (t) { return t.id === id; });
+    if (!entry || !rowEl) return;
+    var sel = rowEl.querySelector('.tx-edit-select');
+    var inp = rowEl.querySelector('.tx-edit-input');
+    if (sel) sel.value = entry.category;
+    if (inp) inp.value = entry.desc;
+    rowEl.classList.remove('row-saving');
+  }
+
+  var txBodyEl = document.getElementById('txBody');
+  txBodyEl.addEventListener('change', function (e) {
+    if (!e.target.classList.contains('tx-edit-select')) return;
+    var row = e.target.closest('tr[data-id]');
+    if (!row) return;
+    var id = parseInt(row.getAttribute('data-id'), 10);
+    updateSingleEntry(id, { category: e.target.value }, row);
+  });
+  txBodyEl.addEventListener('blur', function (e) {
+    if (!e.target.classList.contains('tx-edit-input')) return;
+    var row = e.target.closest('tr[data-id]');
+    if (!row || !state.data) return;
+    var id = parseInt(row.getAttribute('data-id'), 10);
+    var entry = state.data.AUG_TX.find(function (t) { return t.id === id; });
+    var newVal = e.target.value.trim();
+    if (!entry || newVal === entry.desc || !newVal) { if (entry && !newVal) e.target.value = entry.desc; return; }
+    updateSingleEntry(id, { desc: newVal }, row);
+  }, true);
 
   // ---------- token / sheet UI ----------
   var sheetOverlay = document.getElementById('sheetOverlay');
