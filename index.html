@@ -111,9 +111,17 @@
   .tx-edit-select:focus, .tx-edit-input:focus {
     outline: none; border-color: var(--accent); background: var(--card-bg); cursor: auto;
   }
-  tr.row-saving { opacity: 0.5; }
+  tr.row-dirty td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
   tr.row-saved td { transition: background-color .3s; background-color: rgba(47,125,92,0.15); }
   tr.row-error td { transition: background-color .3s; background-color: rgba(179,84,62,0.15); }
+
+  .save-edits-fab {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    background: var(--accent); color: #fff; border: none; border-radius: 999px;
+    padding: 12px 22px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    cursor: pointer; z-index: 41; white-space: nowrap;
+  }
+  .save-edits-fab:disabled { opacity: 0.6; cursor: default; }
 
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 6px; }
   thead th {
@@ -420,6 +428,7 @@
   </div>
 
   <button class="fab" id="fabBtn" aria-label="지출 추가">+</button>
+  <button class="save-edits-fab" id="saveEditsBtn" hidden>변경사항 저장</button>
 
   <div class="sheet-overlay" id="sheetOverlay" hidden>
     <div class="sheet-box">
@@ -831,17 +840,64 @@
   });
 
   // ---------- inline edit in 실제 지출 table (category / desc) ----------
-  function updateSingleEntry(id, patch, rowEl) {
+  // Edits are applied locally right away (so totals/그래프 update instantly) and queued in
+  // pendingEdits; nothing hits GitHub until the floating "변경사항 저장" button is tapped —
+  // one batch commit instead of a network call per keystroke/select.
+  var pendingEdits = {}; // id -> { category?, desc? }
+  var saveEditsBtn = document.getElementById('saveEditsBtn');
+
+  function updateSaveEditsBtn() {
+    var n = Object.keys(pendingEdits).length;
+    if (n > 0) {
+      saveEditsBtn.hidden = false;
+      saveEditsBtn.textContent = '변경사항 저장 (' + n + ')';
+    } else {
+      saveEditsBtn.hidden = true;
+    }
+  }
+
+  function queueEdit(id, field, value) {
+    if (!state.data) return;
+    var entry = state.data.AUG_TX.find(function (t) { return t.id === id; });
+    if (!entry) return;
+    if (entry[field] === value) return; // no actual change
+    entry[field] = value; // optimistic local update
+    pendingEdits[id] = pendingEdits[id] || {};
+    pendingEdits[id][field] = value;
+    renderAll(state.data);
+    updateSaveEditsBtn();
+    var row = document.querySelector('#txBody tr[data-id="' + id + '"]');
+    if (row) row.classList.add('row-dirty');
+  }
+
+  var txBodyEl = document.getElementById('txBody');
+  txBodyEl.addEventListener('change', function (e) {
+    if (!e.target.classList.contains('tx-edit-select')) return;
+    var row = e.target.closest('tr[data-id]');
+    if (!row) return;
+    queueEdit(parseInt(row.getAttribute('data-id'), 10), 'category', e.target.value);
+  });
+  txBodyEl.addEventListener('blur', function (e) {
+    if (!e.target.classList.contains('tx-edit-input')) return;
+    var row = e.target.closest('tr[data-id]');
+    if (!row) return;
+    var newVal = e.target.value.trim();
+    if (!newVal) return;
+    queueEdit(parseInt(row.getAttribute('data-id'), 10), 'desc', newVal);
+  }, true);
+
+  function saveAllEdits() {
+    var ids = Object.keys(pendingEdits);
+    if (ids.length === 0) return;
     var token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
       sheetOverlay.hidden = false;
       showTokenSection();
-      revertRow(rowEl, id);
       return;
     }
     var apiUrl = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH;
-    rowEl.classList.add('row-saving');
-    rowEl.classList.remove('row-saved', 'row-error');
+    saveEditsBtn.disabled = true;
+    saveEditsBtn.textContent = '저장 중…';
 
     fetch(apiUrl, { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' } })
       .then(function (r) {
@@ -850,15 +906,17 @@
       })
       .then(function (fileInfo) {
         var currentData = JSON.parse(b64DecodeUnicode(fileInfo.content));
-        var entry = currentData.AUG_TX.find(function (t) { return t.id === id; });
-        if (!entry) throw new Error('해당 항목을 찾을 수 없어요');
-        Object.assign(entry, patch);
+        ids.forEach(function (idStr) {
+          var id = parseInt(idStr, 10);
+          var entry = currentData.AUG_TX.find(function (t) { return t.id === id; });
+          if (entry) Object.assign(entry, pendingEdits[idStr]);
+        });
         var newContentStr = JSON.stringify(currentData, null, 2);
         return fetch(apiUrl, {
           method: 'PUT',
           headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message: id + '번 항목 수정 (' + Object.keys(patch).join(', ') + ')',
+            message: ids.length + '개 항목 수정 (' + ids.join(', ') + ')',
             content: b64EncodeUnicode(newContentStr),
             sha: fileInfo.sha,
           }),
@@ -870,50 +928,24 @@
       .then(function (updatedData) {
         state.data = updatedData;
         renderAll(updatedData);
-        var newRow = document.querySelector('#txBody tr[data-id="' + id + '"]');
-        if (newRow) {
-          newRow.classList.add('row-saved');
-          setTimeout(function () { newRow.classList.remove('row-saved'); }, 1500);
-        }
+        document.querySelectorAll('#txBody tr.row-dirty').forEach(function (row) {
+          row.classList.remove('row-dirty');
+          row.classList.add('row-saved');
+          setTimeout(function () { row.classList.remove('row-saved'); }, 1500);
+        });
+        pendingEdits = {};
+        updateSaveEditsBtn();
       })
       .catch(function (err) {
-        rowEl.classList.remove('row-saving');
-        rowEl.classList.add('row-error');
-        revertRow(rowEl, id);
         alert('저장 실패: ' + err.message);
-        setTimeout(function () { rowEl.classList.remove('row-error'); }, 2000);
+      })
+      .finally(function () {
+        saveEditsBtn.disabled = false;
+        if (Object.keys(pendingEdits).length > 0) updateSaveEditsBtn();
       });
   }
 
-  function revertRow(rowEl, id) {
-    if (!state.data) return;
-    var entry = state.data.AUG_TX.find(function (t) { return t.id === id; });
-    if (!entry || !rowEl) return;
-    var sel = rowEl.querySelector('.tx-edit-select');
-    var inp = rowEl.querySelector('.tx-edit-input');
-    if (sel) sel.value = entry.category;
-    if (inp) inp.value = entry.desc;
-    rowEl.classList.remove('row-saving');
-  }
-
-  var txBodyEl = document.getElementById('txBody');
-  txBodyEl.addEventListener('change', function (e) {
-    if (!e.target.classList.contains('tx-edit-select')) return;
-    var row = e.target.closest('tr[data-id]');
-    if (!row) return;
-    var id = parseInt(row.getAttribute('data-id'), 10);
-    updateSingleEntry(id, { category: e.target.value }, row);
-  });
-  txBodyEl.addEventListener('blur', function (e) {
-    if (!e.target.classList.contains('tx-edit-input')) return;
-    var row = e.target.closest('tr[data-id]');
-    if (!row || !state.data) return;
-    var id = parseInt(row.getAttribute('data-id'), 10);
-    var entry = state.data.AUG_TX.find(function (t) { return t.id === id; });
-    var newVal = e.target.value.trim();
-    if (!entry || newVal === entry.desc || !newVal) { if (entry && !newVal) e.target.value = entry.desc; return; }
-    updateSingleEntry(id, { desc: newVal }, row);
-  }, true);
+  saveEditsBtn.addEventListener('click', saveAllEdits);
 
   // ---------- token / sheet UI ----------
   var sheetOverlay = document.getElementById('sheetOverlay');
