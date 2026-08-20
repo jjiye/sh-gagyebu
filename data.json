@@ -759,6 +759,38 @@
       "payment": "personal",
       "amount": 13.92,
       "id": 95
+    },
+    {
+      "date": "8/20",
+      "category": "구독·고정비",
+      "desc": "Apple Music (가족)",
+      "payment": "personal",
+      "amount": 1.35,
+      "id": 96
+    },
+    {
+      "date": "8/20",
+      "category": "구독·고정비",
+      "desc": "iCloud+ (6TB)",
+      "payment": "personal",
+      "amount": 4.4,
+      "id": 97
+    },
+    {
+      "date": "8/20",
+      "category": "구독·고정비",
+      "desc": "쑥쑥찰칵 (Ad-free 월간)",
+      "payment": "personal",
+      "amount": 0.49,
+      "id": 98
+    },
+    {
+      "date": "8/20",
+      "category": "구독·고정비",
+      "desc": "카카오톡 톡클라우드",
+      "payment": "personal",
+      "amount": 0.59,
+      "id": 99
     }
   ],
   "JUL_MAP": {
