@@ -629,7 +629,7 @@
       "category": "강아지·산책",
       "desc": "강아지 산책 (현금이체 만원×2, 이윤탁)",
       "payment": "personal",
-      "amount": 2.0,
+      "amount": 2,
       "id": 79
     },
     {
@@ -653,7 +653,7 @@
       "category": "생활용품",
       "desc": "이케아 비닐백 (현금)",
       "payment": "personal",
-      "amount": 1.0,
+      "amount": 1,
       "id": 82
     },
     {
@@ -677,7 +677,7 @@
       "category": "개인(용돈)",
       "desc": "이케아 밥 (외식)",
       "payment": "corp",
-      "amount": 1.0,
+      "amount": 1,
       "id": 85
     },
     {
@@ -791,6 +791,14 @@
       "payment": "personal",
       "amount": 0.59,
       "id": 99
+    },
+    {
+      "id": 100,
+      "date": "8/20",
+      "category": "개인(용돈)",
+      "desc": "테스트",
+      "payment": "personal",
+      "amount": 0.01
     }
   ],
   "JUL_MAP": {
