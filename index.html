@@ -447,8 +447,11 @@
         <input type="password" id="tokenInput" placeholder="github_pat_...">
         <div class="field-row">
           <button class="btn btn-primary" id="tokenSaveBtn">저장</button>
+          <button class="btn btn-secondary" id="tokenTestBtn">토큰 테스트</button>
         </div>
         <div class="token-note">토큰은 이 기기·브라우저에만 저장됩니다. 다른 기기에서는 다시 입력해야 해요.</div>
+        <div class="token-note" id="tokenPreview"></div>
+        <div class="status-msg" id="tokenTestMsg"></div>
       </div>
 
       <div id="addSection" hidden>
@@ -534,11 +537,14 @@
     var corp = tx.filter(function (t) { return t.payment === 'corp'; }).reduce(function (s, t) { return s + t.amount; }, 0);
     var personal = total - corp;
     var remain = Math.max(0, target - total);
+    // "남편" 지출: desc에 '남편'이 들어간 항목 합계 (결제수단 스키마를 건드리지 않고 텍스트 기준으로 집계)
+    var husband = tx.filter(function (t) { return /남편/.test(t.desc); }).reduce(function (s, t) { return s + t.amount; }, 0);
 
     document.getElementById('budgetRow').innerHTML =
       '<div class="item"><span class="label">이번 달 지출</span><span class="value">' + fmt(total) + '만원</span></div>' +
       '<div class="item"><span class="label">법카 합계</span><span class="value">' + fmt(corp) + '만원</span></div>' +
       '<div class="item"><span class="label">법카 제외</span><span class="value">' + fmt(personal) + '만원</span></div>' +
+      '<div class="item"><span class="label">남편카드</span><span class="value">' + fmt(husband) + '만원</span></div>' +
       '<div class="item"><span class="label">잔여 예산</span><span class="value">' + fmt(remain) + '만원</span></div>';
 
     var catGrid = document.getElementById('catGrid');
@@ -992,9 +998,32 @@
   var tokenSection = document.getElementById('tokenSection');
   var addSection = document.getElementById('addSection');
 
+  // 붙여넣기 과정에서 섞여 들어올 수 있는 눈에 안 보이는 문자(제로폭 공백, BOM, 줄바꿈 등)까지
+  // 전부 제거 — 앞뒤 trim만으로는 안 잡히는 401 원인의 상당수가 이런 보이지 않는 문자임.
+  var INVISIBLE_CHARS_RE = new RegExp('[\\s\\u200B\\u200C\\u200D\\uFEFF]', 'g');
+  function cleanToken(raw) {
+    return String(raw || '').replace(INVISIBLE_CHARS_RE, '');
+  }
+
+  function maskToken(t) {
+    if (!t) return '';
+    if (t.length <= 14) return t.slice(0, 4) + '…';
+    return t.slice(0, 10) + '…' + t.slice(-4) + ' (' + t.length + '자)';
+  }
+
+  function renderTokenPreview() {
+    var el = document.getElementById('tokenPreview');
+    var saved = localStorage.getItem(TOKEN_KEY);
+    el.textContent = saved ? ('현재 저장된 토큰: ' + maskToken(saved)) : '저장된 토큰이 없어요.';
+  }
+
   function showTokenSection() {
     tokenSection.hidden = false;
     addSection.hidden = true;
+    renderTokenPreview();
+    var msg = document.getElementById('tokenTestMsg');
+    msg.className = 'status-msg';
+    msg.textContent = '';
   }
   function showAddSection() {
     tokenSection.hidden = true;
@@ -1010,11 +1039,45 @@
   document.getElementById('settingsBtn').addEventListener('click', showTokenSection);
 
   document.getElementById('tokenSaveBtn').addEventListener('click', function () {
-    var val = document.getElementById('tokenInput').value.trim();
+    var val = cleanToken(document.getElementById('tokenInput').value);
     if (!val) return;
     localStorage.setItem(TOKEN_KEY, val);
     document.getElementById('tokenInput').value = '';
     showAddSection();
+  });
+
+  document.getElementById('tokenTestBtn').addEventListener('click', function () {
+    var inputVal = cleanToken(document.getElementById('tokenInput').value);
+    var token = inputVal || cleanToken(localStorage.getItem(TOKEN_KEY));
+    var msg = document.getElementById('tokenTestMsg');
+    if (!token) {
+      msg.className = 'status-msg show err';
+      msg.textContent = '테스트할 토큰이 없어요 — 입력창에 붙여넣고 눌러줘.';
+      return;
+    }
+    msg.className = 'status-msg show loading';
+    msg.textContent = '테스트 중… (' + maskToken(token) + ')';
+    var apiUrl = 'https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + GH_PATH;
+    fetch(apiUrl, { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' } })
+      .then(function (r) {
+        if (r.ok) {
+          msg.className = 'status-msg show ok';
+          msg.textContent = '✅ 정상! 이 토큰으로 저장 가능해 (' + maskToken(token) + ')';
+          if (inputVal) {
+            localStorage.setItem(TOKEN_KEY, inputVal);
+            renderTokenPreview();
+          }
+          return;
+        }
+        return r.json().catch(function () { return {}; }).then(function (e) {
+          msg.className = 'status-msg show err';
+          msg.textContent = '❌ 실패 (' + r.status + '): ' + (e.message || '알 수 없는 오류');
+        });
+      })
+      .catch(function (err) {
+        msg.className = 'status-msg show err';
+        msg.textContent = '❌ 네트워크 오류: ' + err.message;
+      });
   });
 
   // ---------- init ----------
