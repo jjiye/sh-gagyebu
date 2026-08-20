@@ -265,6 +265,11 @@
   }
   .cand-card input[type="number"] { text-align: right; }
   .remove-row { background: none; border: none; color: var(--over); font-size: 20px; cursor: pointer; padding: 2px 8px; line-height: 1; }
+  .tx-del-btn {
+    background: none; border: none; color: var(--text-muted); font-size: 15px; cursor: pointer;
+    padding: 4px 6px; line-height: 1; border-radius: 6px;
+  }
+  .tx-del-btn:hover { background: rgba(179,84,62,0.15); color: var(--over); }
   .status-msg { font-size: 13px; margin-top: 10px; padding: 8px 10px; border-radius: 8px; display: none; }
   .status-msg.show { display: block; }
   .status-msg.ok { background: rgba(47,125,92,0.15); color: var(--under); }
@@ -415,8 +420,8 @@
 
       <div class="section-label">실제 지출</div>
       <table>
-        <thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th></tr></thead>
-        <tbody id="txBody"><tr><td class="empty" colspan="5">불러오는 중…</td></tr></tbody>
+        <thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th><th></th></tr></thead>
+        <tbody id="txBody"><tr><td class="empty" colspan="6">불러오는 중…</td></tr></tbody>
         <tfoot id="txFoot"></tfoot>
       </table>
     </div>
@@ -479,10 +484,12 @@
   var CATEGORIES = [
     '아이 필수생활·식품', '아이 보험', '아이 옷·장난감 등 비필수', '식료품',
     '배달음식', '관리비·가스', '강아지·산책', '통신', '일반 보험', '이자',
-    '차량·세차', '병원', '개인(용돈)', '생활용품',
+    '차량·세차', '병원', '개인(용돈)', '생활용품', '구독·고정비', '세금',
   ];
 
   var KEYWORD_RULES = [
+    ['세금', ['재산세', '자동차세', '종합소득세', '주민세', '취득세', '양도세']],
+    ['구독·고정비', ['챗지피티', 'chatgpt', '구독', '아이클라우드', 'icloud', '애플뮤직', '유튜브프리미엄', '유튜브 프리미엄', '넷플릭스', '톡클라우드', '쑥쑥찰칵']],
     ['아이 보험', ['아이보험', '아기보험']],
     ['아이 필수생활·식품', ['기저귀', '이유식', '분유', '아기간식', '아기 간식', '물티슈']],
     ['아이 옷·장난감 등 비필수', ['장난감', '아기옷', '아기 옷', '아기책', '아동복']],
@@ -579,7 +586,7 @@
     var txBody = document.getElementById('txBody');
     var txFoot = document.getElementById('txFoot');
     if (tx.length === 0) {
-      txBody.innerHTML = '<tr><td class="empty" colspan="5">아직 기록된 내역이 없습니다.</td></tr>';
+      txBody.innerHTML = '<tr><td class="empty" colspan="6">아직 기록된 내역이 없습니다.</td></tr>';
       txFoot.innerHTML = '';
     } else {
       txBody.innerHTML = sortDesc(tx).map(function (t) {
@@ -594,10 +601,11 @@
           '<td><input type="text" class="tx-edit-input" data-field="desc" value="' + escapeHtml(t.desc) + '"></td>' +
           '<td>' + payHtml + '</td>' +
           '<td class="amt">' + fmt(t.amount) + '만원</td>' +
+          '<td><button type="button" class="tx-del-btn" data-id="' + t.id + '" aria-label="삭제">&#128465;</button></td>' +
           '</tr>'
         );
       }).join('');
-      txFoot.innerHTML = '<tr><td colspan="4">총지출</td><td class="amt">' + fmt(total) + '만원</td></tr>';
+      txFoot.innerHTML = '<tr><td colspan="4">총지출</td><td class="amt">' + fmt(total) + '만원</td><td></td></tr>';
     }
   }
 
@@ -792,7 +800,9 @@
 
     fetch(apiUrl, { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' } })
       .then(function (r) {
-        if (!r.ok) throw new Error('불러오기 실패 (' + r.status + ')');
+        if (!r.ok) return r.json().catch(function () { return {}; }).then(function (e) {
+          throw new Error('불러오기 실패 (' + r.status + '): ' + (e.message || '토큰 또는 저장소 권한을 확인해주세요'));
+        });
         return r.json();
       })
       .then(function (fileInfo) {
@@ -860,6 +870,7 @@
     if (!state.data) return;
     var entry = state.data.AUG_TX.find(function (t) { return t.id === id; });
     if (!entry) return;
+    if (pendingEdits[id] && pendingEdits[id]._delete) return; // already queued for deletion
     if (entry[field] === value) return; // no actual change
     entry[field] = value; // optimistic local update
     pendingEdits[id] = pendingEdits[id] || {};
@@ -868,6 +879,18 @@
     updateSaveEditsBtn();
     var row = document.querySelector('#txBody tr[data-id="' + id + '"]');
     if (row) row.classList.add('row-dirty');
+  }
+
+  function queueDelete(id) {
+    if (!state.data) return;
+    var idx = state.data.AUG_TX.findIndex(function (t) { return t.id === id; });
+    if (idx === -1) return;
+    var entry = state.data.AUG_TX[idx];
+    if (!confirm('"' + entry.desc + '" (' + fmt(entry.amount) + '만원) 항목을 삭제할까요?')) return;
+    state.data.AUG_TX.splice(idx, 1); // optimistic local removal
+    pendingEdits[id] = { _delete: true };
+    renderAll(state.data);
+    updateSaveEditsBtn();
   }
 
   var txBodyEl = document.getElementById('txBody');
@@ -885,6 +908,11 @@
     if (!newVal) return;
     queueEdit(parseInt(row.getAttribute('data-id'), 10), 'desc', newVal);
   }, true);
+  txBodyEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('.tx-del-btn');
+    if (!btn) return;
+    queueDelete(parseInt(btn.getAttribute('data-id'), 10));
+  });
 
   function saveAllEdits() {
     var ids = Object.keys(pendingEdits);
@@ -901,22 +929,34 @@
 
     fetch(apiUrl, { headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' } })
       .then(function (r) {
-        if (!r.ok) throw new Error('불러오기 실패 (' + r.status + ')');
+        if (!r.ok) return r.json().catch(function () { return {}; }).then(function (e) {
+          throw new Error('불러오기 실패 (' + r.status + '): ' + (e.message || '토큰 또는 저장소 권한을 확인해주세요'));
+        });
         return r.json();
       })
       .then(function (fileInfo) {
         var currentData = JSON.parse(b64DecodeUnicode(fileInfo.content));
+        var deleteIds = [];
         ids.forEach(function (idStr) {
           var id = parseInt(idStr, 10);
+          var patch = pendingEdits[idStr];
+          if (patch._delete) { deleteIds.push(id); return; }
           var entry = currentData.AUG_TX.find(function (t) { return t.id === id; });
-          if (entry) Object.assign(entry, pendingEdits[idStr]);
+          if (entry) Object.assign(entry, patch);
         });
+        if (deleteIds.length > 0) {
+          currentData.AUG_TX = currentData.AUG_TX.filter(function (t) { return deleteIds.indexOf(t.id) === -1; });
+        }
+        var editCount = ids.length - deleteIds.length;
+        var msgParts = [];
+        if (editCount > 0) msgParts.push(editCount + '개 수정');
+        if (deleteIds.length > 0) msgParts.push(deleteIds.length + '개 삭제');
         var newContentStr = JSON.stringify(currentData, null, 2);
         return fetch(apiUrl, {
           method: 'PUT',
           headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message: ids.length + '개 항목 수정 (' + ids.join(', ') + ')',
+            message: msgParts.join(', ') + ' (' + ids.join(', ') + ')',
             content: b64EncodeUnicode(newContentStr),
             sha: fileInfo.sha,
           }),

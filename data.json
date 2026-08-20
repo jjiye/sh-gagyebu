@@ -519,6 +519,246 @@
       "payment": "corp",
       "amount": 1.4,
       "id": 65
+    },
+    {
+      "date": "8/14",
+      "category": "개인(용돈)",
+      "desc": "산드로(마스선물)",
+      "payment": "corp",
+      "amount": 14.504,
+      "id": 66
+    },
+    {
+      "date": "8/14",
+      "category": "개인(용돈)",
+      "desc": "타다택시",
+      "payment": "corp",
+      "amount": 2.48,
+      "id": 67
+    },
+    {
+      "date": "8/14",
+      "category": "개인(용돈)",
+      "desc": "카카오택시",
+      "payment": "corp",
+      "amount": 1.75,
+      "id": 68
+    },
+    {
+      "date": "8/14",
+      "category": "식료품",
+      "desc": "식료품",
+      "payment": "corp",
+      "amount": 0.597,
+      "id": 69
+    },
+    {
+      "date": "8/14",
+      "category": "식료품",
+      "desc": "식료품",
+      "payment": "corp",
+      "amount": 1.188,
+      "id": 70
+    },
+    {
+      "date": "8/14",
+      "category": "아이 필수생활·식품",
+      "desc": "선호칫솔 (쿠팡)",
+      "payment": "corp",
+      "amount": 1.178,
+      "id": 71
+    },
+    {
+      "date": "8/14",
+      "category": "아이 필수생활·식품",
+      "desc": "아기분유",
+      "payment": "personal",
+      "amount": 6.9743,
+      "id": 72
+    },
+    {
+      "date": "8/14",
+      "category": "아이 필수생활·식품",
+      "desc": "분유케이스 (쿠팡)",
+      "payment": "corp",
+      "amount": 1.196,
+      "id": 73
+    },
+    {
+      "date": "8/14",
+      "category": "생활용품",
+      "desc": "수세미 (쿠팡)",
+      "payment": "corp",
+      "amount": 0.562,
+      "id": 74
+    },
+    {
+      "date": "8/14",
+      "category": "생활용품",
+      "desc": "수세미거치대 (쿠팡)",
+      "payment": "corp",
+      "amount": 0.66,
+      "id": 75
+    },
+    {
+      "date": "8/14",
+      "category": "배달음식",
+      "desc": "밥버거",
+      "payment": "corp",
+      "amount": 1.56,
+      "id": 76
+    },
+    {
+      "date": "8/14",
+      "category": "아이 필수생활·식품",
+      "desc": "아기이유식 재료 (베리네이처, 84,100원 결제→2건취소·18,700원 환불)",
+      "payment": "corp",
+      "amount": 6.54,
+      "id": 77
+    },
+    {
+      "date": "8/14",
+      "category": "아이 필수생활·식품",
+      "desc": "아기 모서리보호대 (쿠팡)",
+      "payment": "corp",
+      "amount": 0.59,
+      "id": 78
+    },
+    {
+      "date": "8/14",
+      "category": "강아지·산책",
+      "desc": "강아지 산책 (현금이체 만원×2, 이윤탁)",
+      "payment": "personal",
+      "amount": 2.0,
+      "id": 79
+    },
+    {
+      "date": "8/16",
+      "category": "배달음식",
+      "desc": "요아정 (쿠팡이츠)",
+      "payment": "corp",
+      "amount": 0.6,
+      "id": 80
+    },
+    {
+      "date": "8/17",
+      "category": "배달음식",
+      "desc": "닭죽 (쿠팡이츠)",
+      "payment": "corp",
+      "amount": 4.18,
+      "id": 81
+    },
+    {
+      "date": "8/17",
+      "category": "생활용품",
+      "desc": "이케아 비닐백 (현금)",
+      "payment": "personal",
+      "amount": 1.0,
+      "id": 82
+    },
+    {
+      "date": "8/15",
+      "category": "아이 필수생활·식품",
+      "desc": "아기분유 (SSG)",
+      "payment": "personal",
+      "amount": 6.9743,
+      "id": 83
+    },
+    {
+      "date": "8/18",
+      "category": "배달음식",
+      "desc": "디저트 (쿠팡이츠)",
+      "payment": "corp",
+      "amount": 2.94,
+      "id": 84
+    },
+    {
+      "date": "8/17",
+      "category": "개인(용돈)",
+      "desc": "이케아 밥 (외식)",
+      "payment": "corp",
+      "amount": 1.0,
+      "id": 85
+    },
+    {
+      "date": "8/15",
+      "category": "아이 필수생활·식품",
+      "desc": "스토케 (현금)",
+      "payment": "personal",
+      "amount": 0.7,
+      "id": 86
+    },
+    {
+      "date": "8/18",
+      "category": "식료품",
+      "desc": "후리가케·바나나·소면·당면·계란 (쿠팡)",
+      "payment": "corp",
+      "amount": 3.205,
+      "id": 87
+    },
+    {
+      "date": "8/19",
+      "category": "식료품",
+      "desc": "서울우유 속편한 우유 (쿠팡)",
+      "payment": "corp",
+      "amount": 2.89,
+      "id": 88
+    },
+    {
+      "date": "8/19",
+      "category": "병원",
+      "desc": "본인 병원 - 유시원마취통증의학과",
+      "payment": "personal",
+      "amount": 12.12,
+      "id": 89
+    },
+    {
+      "date": "8/19",
+      "category": "개인(용돈)",
+      "desc": "남편 화장품 (네이버페이)",
+      "payment": "personal",
+      "amount": 7.375,
+      "id": 90
+    },
+    {
+      "date": "8/19",
+      "category": "구독·고정비",
+      "desc": "챗지피티 구독 (ChatGPT Plus)",
+      "payment": "personal",
+      "amount": 2.9,
+      "id": 91
+    },
+    {
+      "date": "8/19",
+      "category": "강아지·산책",
+      "desc": "강아지 사료 (인섹트도그, 네이버페이·남편)",
+      "payment": "personal",
+      "amount": 5.855,
+      "id": 92
+    },
+    {
+      "date": "8/20",
+      "category": "배달음식",
+      "desc": "디저트 (포엠베이크, 브라우니 외 4건, 쿠팡이츠)",
+      "payment": "corp",
+      "amount": 3.56,
+      "id": 93
+    },
+    {
+      "date": "8/20",
+      "category": "관리비·가스",
+      "desc": "샹그레빌입주자대표회 (관리비, 계좌이체)",
+      "payment": "personal",
+      "amount": 34.277,
+      "id": 94
+    },
+    {
+      "date": "8/20",
+      "category": "세금",
+      "desc": "재산세 (계좌이체)",
+      "payment": "personal",
+      "amount": 13.92,
+      "id": 95
     }
   ],
   "JUL_MAP": {
@@ -535,7 +775,9 @@
     "차량·세차": 3,
     "병원": 62.5,
     "개인(용돈)": 0,
-    "생활용품": 0
+    "생활용품": 0,
+    "구독·고정비": 0,
+    "세금": 0
   },
   "CAT_ORDER": [
     "아이 필수생활·식품",
@@ -551,7 +793,9 @@
     "차량·세차",
     "병원",
     "개인(용돈)",
-    "생활용품"
+    "생활용품",
+    "구독·고정비",
+    "세금"
   ],
   "BUDGET_TARGET": 300
 }
