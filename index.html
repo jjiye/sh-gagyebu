@@ -419,6 +419,12 @@
       <div class="cat-grid" id="catGrid"></div>
 
       <div class="section-label">실제 지출</div>
+      <div class="toggle-group" id="txFilterToggle" style="margin-bottom:8px;">
+        <button type="button" data-val="all" class="active">전체</button>
+        <button type="button" data-val="corp">법카</button>
+        <button type="button" data-val="personal">개인</button>
+        <button type="button" data-val="husband">남편</button>
+      </div>
       <table>
         <thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th><th></th></tr></thead>
         <tbody id="txBody"><tr><td class="empty" colspan="6">불러오는 중…</td></tr></tbody>
@@ -516,6 +522,7 @@
   var TOKEN_KEY = 'gagyebu_gh_token';
 
   var state = { data: null };
+  var txFilter = 'all'; // 'all' | 'corp' | 'personal' | 'husband'
 
   function fmt(n) {
     var r = Math.round(n * 10) / 10;
@@ -591,11 +598,17 @@
 
     var txBody = document.getElementById('txBody');
     var txFoot = document.getElementById('txFoot');
-    if (tx.length === 0) {
-      txBody.innerHTML = '<tr><td class="empty" colspan="6">아직 기록된 내역이 없습니다.</td></tr>';
+    var filteredTx = tx.filter(function (t) {
+      if (txFilter === 'corp') return t.payment === 'corp';
+      if (txFilter === 'personal') return t.payment !== 'corp';
+      if (txFilter === 'husband') return /남편/.test(t.desc);
+      return true;
+    });
+    if (filteredTx.length === 0) {
+      txBody.innerHTML = '<tr><td class="empty" colspan="6">' + (tx.length === 0 ? '아직 기록된 내역이 없습니다.' : '해당하는 내역이 없습니다.') + '</td></tr>';
       txFoot.innerHTML = '';
     } else {
-      txBody.innerHTML = sortDesc(tx).map(function (t) {
+      txBody.innerHTML = sortDesc(filteredTx).map(function (t) {
         var payHtml = t.payment === 'corp' ? '<span class="corp-text">법카</span>' : '개인';
         var catOptions = CATEGORIES.map(function (cat) {
           return '<option value="' + cat + '"' + (cat === t.category ? ' selected' : '') + '>' + cat + '</option>';
@@ -611,7 +624,9 @@
           '</tr>'
         );
       }).join('');
-      txFoot.innerHTML = '<tr><td colspan="4">총지출</td><td class="amt">' + fmt(total) + '만원</td><td></td></tr>';
+      var filteredTotal = filteredTx.reduce(function (s, t) { return s + t.amount; }, 0);
+      var footLabel = txFilter === 'all' ? '총지출' : '합계 (' + filteredTx.length + '건)';
+      txFoot.innerHTML = '<tr><td colspan="4">' + footLabel + '</td><td class="amt">' + fmt(filteredTotal) + '만원</td><td></td></tr>';
     }
   }
 
@@ -776,6 +791,16 @@
     btn.addEventListener('click', function () {
       document.querySelectorAll('#defaultPayToggle button').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
+    });
+  });
+
+  // ---------- 실제 지출 결제수단 필터 (전체/법카/개인/남편) ----------
+  document.querySelectorAll('#txFilterToggle button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('#txFilterToggle button').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      txFilter = btn.getAttribute('data-val');
+      if (state.data) renderAll(state.data);
     });
   });
 
@@ -1082,7 +1107,7 @@
 
   // ---------- init ----------
   fetchData().catch(function (err) {
-    document.getElementById('txBody').innerHTML = '<tr><td class="empty" colspan="5">데이터를 불러오지 못했어요.</td></tr>';
+    document.getElementById('txBody').innerHTML = '<tr><td class="empty" colspan="6">데이터를 불러오지 못했어요.</td></tr>';
     console.error(err);
   });
 })();
