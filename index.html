@@ -424,6 +424,7 @@
         <button type="button" data-val="corp">법카</button>
         <button type="button" data-val="personal">개인</button>
         <button type="button" data-val="husband">남편</button>
+        <button type="button" data-val="cash">현금</button>
       </div>
       <table>
         <thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th>결제</th><th style="text-align:right;">금액</th><th></th></tr></thead>
@@ -602,6 +603,7 @@
       if (txFilter === 'corp') return t.payment === 'corp';
       if (txFilter === 'personal') return t.payment !== 'corp';
       if (txFilter === 'husband') return /남편/.test(t.desc);
+      if (txFilter === 'cash') return /현금/.test(t.desc);
       return true;
     });
     if (filteredTx.length === 0) {
