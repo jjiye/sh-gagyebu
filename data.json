@@ -799,6 +799,22 @@
       "desc": "테스트",
       "payment": "personal",
       "amount": 0.01
+    },
+    {
+      "id": 101,
+      "date": "8/21",
+      "category": "아이 필수생활·식품",
+      "desc": "침대가드",
+      "payment": "corp",
+      "amount": 8.19
+    },
+    {
+      "id": 102,
+      "date": "8/22",
+      "category": "생활용품",
+      "desc": "정리세션(현금)",
+      "payment": "personal",
+      "amount": 90
     }
   ],
   "JUL_MAP": {
