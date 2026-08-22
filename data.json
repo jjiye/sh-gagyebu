@@ -815,6 +815,30 @@
       "desc": "정리세션(현금)",
       "payment": "personal",
       "amount": 90
+    },
+    {
+      "id": 103,
+      "date": "8/22",
+      "category": "개인(용돈)",
+      "desc": "김치찜 배달",
+      "payment": "corp",
+      "amount": 3.21
+    },
+    {
+      "id": 104,
+      "date": "8/22",
+      "category": "아이 옷·장난감 등 비필수",
+      "desc": "당근 장난감",
+      "payment": "personal",
+      "amount": 1.6886
+    },
+    {
+      "id": 105,
+      "date": "8/22",
+      "category": "아이 옷·장난감 등 비필수",
+      "desc": "당근 장난감",
+      "payment": "personal",
+      "amount": 1.382
     }
   ],
   "JUL_MAP": {
